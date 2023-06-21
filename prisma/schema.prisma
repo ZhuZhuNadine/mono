@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Currency {
+  id        Int      @id @default(autoincrement())
+  currencyCodeA Int
+  currencyCodeB Int
+  date     Int
+  rateBuy   Float
+  rateCross Float
+  rateSell  Float   
+}
+
+model Account {
+  accId Int     @id @default(autoincrement())
+  id String @unique @db.VarChar(255)
+  sendId String @db.VarChar(255)
+  balance Int 
+  creditLimit Int
+  type String @db.VarChar(255)
+  currencyCode Int 
+  cashbackType String? @db.VarChar(255)
+  maskedPan MaskedPan[]
+  iban String @db.VarChar(255)
+  client ClientInfo @relation(fields:[clientId], references:[id])
+  clientId Int
+  statement Statement[]
+}
+
+model MaskedPan{
+  id     Int     @id @default(autoincrement())
+  account Account @relation(fields:[accId], references:[accId])
+  accId Int
+  maskedPan String @db.VarChar(255)
+}
+
+model Jar {
+  jarId Int     @id @default(autoincrement())
+  id String @db.VarChar(255)
+  sendId String @db.VarChar(255)
+  title String @db.VarChar(255)
+  description String @db.VarChar(255)
+  currencyCode Int 
+  balance Int
+  goal Int
+  client ClientInfo @relation(fields:[clientId], references:[id])
+  clientId Int
+}
+
+model ClientInfo {
+  id Int     @id @default(autoincrement())
+  clientId String @db.VarChar(255)
+  name String   @db.VarChar(255)
+  webHookUrl String   @db.VarChar(255)
+  permissions String   @db.VarChar(255)
+  accounts Account[]
+  jars Jar[]
+}
+
+model Statement {
+  statementId Int     @id @default(autoincrement())
+  account Account @relation(fields:[accountId], references:[id]) 
+  accountId String @db.VarChar(255)
+  id  String @unique @db.VarChar(255)
+  time Int
+  description String @db.VarChar(255)
+  mcc Int
+  originalMcc Int
+  amount Int
+  operationAmount Int
+  currencyCode Int
+  commissionRate Float
+  cashbackAmount Int 
+  balance Int
+  hold Boolean
+}

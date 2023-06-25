@@ -188,4 +188,20 @@ export async function fundsTurnover(dateFrom,dateTo,account){
   }
 }
 
-
+export async function getStatementSql(dateForStatement){
+  return await prisma.statement.findMany({
+    where:{
+      accountId: await getAccountId(account),
+      AND:[
+        {time:{
+          lte: dates.dateTo
+        }
+      },{
+        time:{
+          gte: dates.dateFrom
+        }
+      }
+      ]
+    }
+  })
+}

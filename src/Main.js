@@ -4,7 +4,7 @@ import { fundsTurnoverExchange, dateForStatement, getAccountId} from "./statemen
 import { getBalance } from "./info.js";
 import { clientInfo, currenciesSql, statementSql, prismaDisconnect } from "./sql.js";
 import { PrismaClient } from "@prisma/client"
-import { currencyExchange, fundsTurnover } from "./sql.js";
+import { currencyExchange, fundsTurnover, getStatementSql } from "./sql.js";
 
 const prisma = new PrismaClient()
 
@@ -17,27 +17,6 @@ class Mono {
   static setToken (token){
     headers.token = token
   };
-  /**
-   * @returns {Promise} Promise which consist info about all accounts
-   * @example let info = await getClientInfo()
-  {
-  clientId: 'string',
-  name: 'string',
-  webHookUrl: 'string',
-  permissions: 'string',
-  accounts: [
-    {
-      id: 'string',
-      sendId: 'string',
-      currencyCode: number,
-      cashbackType: 'string',
-      balance: number,
-      creditLimit: number,
-      maskedPan: [Array],
-      type: 'string',
-      iban: 'string'
-    }
-   */
   static async addClientInfo(){
     let client = await monoRequest(urlMono.info,headers.infoAndStatement)
     clientInfo(client) 
@@ -79,21 +58,7 @@ class Mono {
    */
   static async getStatement(dateFrom,dateTo,account){
     const dates = dateForStatement(dateFrom,dateTo)
-    return await prisma.statement.findMany({
-      where:{
-        accountId: await getAccountId(account),
-        AND:[
-          {time:{
-            lte: dates.dateTo
-          }
-        },{
-          time:{
-            gte: dates.dateFrom
-          }
-        }
-        ]
-      }
-    })
+    return await getStatementSql(dates)
   };
   /**
  * @returns {Promise<object>}
